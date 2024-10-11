@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boy and Girl Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #87CEEB;
+        }
+
+        .game-container {
+            position: relative;
+            width: 800px;
+            height: 400px;
+            background-color: #f0f0f0;
+            border: 2px solid #333;
+            overflow: hidden;
+        }
+
+        .boy, .girl {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+        }
+
+        .boy {
+            background-color: blue;
+            bottom: 0;
+            left: 50px;
+        }
+
+        .girl {
+            background-color: pink;
+            bottom: 0;
+            right: 50px;
+        }
+
+        .block {
+            position: absolute;
+            bottom: 0;
+            width: 50px;
+            height: 100px;
+            background-color: green;
+            animation: moveBlock 3s linear infinite;
+        }
+
+        @keyframes moveBlock {
+            0% {
+                right: -50px;
+            }
+            100% {
+                right: 800px;
+            }
+        }
+
+        #start-screen, #end-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            color: white;
+            font-size: 24px;
+        }
+
+        #start-button, #retry-button {
+            padding: 10px 20px;
+            font-size: 18px;
+            background-color: orange;
+            border: none;
+            cursor: pointer;
+        }
+
+        #name-form {
+            display: flex;
+            gap: 10px;
+        }
+
+        input {
+            padding: 5px;
+            font-size: 16px;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="game-container">
+    <div class="boy" id="boy"></div>
+    <div class="girl" id="girl"></div>
+    <div class="block" id="block"></div>
+    <div id="start-screen">
+        <h1>Welcome to Boy & Girl Game</h1>
+        <form id="name-form">
+            <input type="text" id="boyName" placeholder="Boy's Name" required>
+            <input type="text" id="girlName" placeholder="Girl's Name" required>
+            <button id="start-button" type="submit">Start Game</button>
+        </form>
+    </div>
+    <div id="end-screen" style="display: none;">
+        <h2 id="end-message"></h2>
+        <button id="retry-button">Retry</button>
+    </div>
+</div>
+
+<script>
+    const boy = document.getElementById('boy');
+    const girl = document.getElementById('girl');
+    const block = document.getElementById('block');
+    const startScreen = document.getElementById('start-screen');
+    const endScreen = document.getElementById('end-screen');
+    const endMessage = document.getElementById('end-message');
+    const startButton = document.getElementById('start-button');
+    const retryButton = document.getElementById('retry-button');
+    const nameForm = document.getElementById('name-form');
+    let boyName = '';
+    let girlName = '';
+    let gameInterval;
+    let blockSpeed = 5;
+    let gameOver = false;
+
+    // Start Game
+    nameForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        boyName = document.getElementById('boyName').value;
+        girlName = document.getElementById('girlName').value;
+        startScreen.style.display = 'none';
+        startGame();
+        sendNamesToEmail(boyName, girlName);
+    });
+
+    function sendNamesToEmail(boyName, girlName) {
+        // Simulate email functionality (you'd need a real backend to send emails)
+        console.log(`Sending email to chinmaybk22@outlook.com...`);
+        console.log(`Boy's Name: ${boyName}, Girl's Name: ${girlName}`);
+    }
+
+    // Game logic
+    function startGame() {
+        let gravity = 0.5;
+        let jumpHeight = -10;
+        let velocity = 0;
+        let isJumping = false;
+
+        document.addEventListener('keydown', (event) => {
+            if (event.code === 'Space') {
+                isJumping = true;
+            }
+        });
+
+        gameInterval = setInterval(() => {
+            if (!gameOver) {
+                // Apply gravity
+                if (isJumping) {
+                    velocity = jumpHeight;
+                    isJumping = false;
+                } else {
+                    velocity += gravity;
+                }
+
+                // Move the boy
+                boy.style.bottom = `${parseInt(boy.style.bottom) + velocity}px`;
+
+                // Collision detection
+                if (checkCollision(boy, block)) {
+                    gameOver = true;
+                    endMessage.innerText = "Oh no! You hit a block! Try again!";
+                    endScreen.style.display = 'flex';
+                    clearInterval(gameInterval);
+                }
+
+                // Win condition
+                if (parseInt(boy.style.left) >= parseInt(girl.style.left) - 50) {
+                    gameOver = true;
+                    endMessage.innerText = `Congratulations ${boyName}! You reached ${girlName}!`;
+                    endScreen.style.display = 'flex';
+                    clearInterval(gameInterval);
+                }
+            }
+        }, 20);
+    }
+
+    function checkCollision(boy, block) {
+        const boyRect = boy.getBoundingClientRect();
+        const blockRect = block.getBoundingClientRect();
+        return (
+            boyRect.left < blockRect.right &&
+            boyRect.right > blockRect.left &&
+            boyRect.top < blockRect.bottom &&
+            boyRect.bottom > blockRect.top
+        );
+    }
+
+    // Retry the game
+    retryButton.addEventListener('click', () => {
+        location.reload();
+    });
+
+</script>
+
+</body>
+</html>
